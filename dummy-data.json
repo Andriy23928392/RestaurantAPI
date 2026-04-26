@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Стейк Рибай",
+    "description": "Мармурова яловичина, просмаження Medium",
+    "price": 450.0,
+    "calories": 650,
+    "imageUrl": "https://via.placeholder.com/150/1e1e1e/ffffff?text=Ribeye",
+    "isAvailable": true
+  },
+  {
+    "id": 2,
+    "name": "Салат Цезар",
+    "description": "Хрусткий айсберг, курка, пармезан, соус",
+    "price": 220.0,
+    "calories": 320,
+    "imageUrl": "https://via.placeholder.com/150/1e1e1e/ffffff?text=Caesar",
+    "isAvailable": true
+  },
+  {
+    "id": 3,
+    "name": "Крем-суп грибний",
+    "description": "Печериці, вершки, трюфельна олія",
+    "price": 180.0,
+    "calories": 250,
+    "imageUrl": "https://via.placeholder.com/150/1e1e1e/ffffff?text=Soup",
+    "isAvailable": false
+  }
+]
