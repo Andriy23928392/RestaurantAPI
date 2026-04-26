@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шеф-кухар | Адмін-панель</title>
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+<div class="admin-wrapper">
+    <header class="admin-header">
+        <div>
+            <h1>Панель управління меню</h1>
+            <p class="subtitle">Режим шеф-кухаря</p>
+        </div>
+        <div class="user-badge">Chef</div>
+    </header>
+
+    <main class="admin-content">
+        <div class="table-container">
+            <table class="menu-table">
+                <thead>
+                <tr>
+                    <th>Фото</th>
+                    <th>Назва та опис</th>
+                    <th>Ціна (₴)</th>
+                    <th>Калорії</th>
+                    <th>Статус наявності</th>
+                </tr>
+                </thead>
+                <tbody id="menu-tbody">
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="admin-app.js"></script>
+</body>
+</html>
