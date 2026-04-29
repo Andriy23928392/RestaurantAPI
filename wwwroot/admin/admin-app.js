@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         try {
-            const response = await fetch('dummy-data.json');
+            const response = await fetch('/api/menu');
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

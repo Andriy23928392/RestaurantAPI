@@ -4,6 +4,7 @@ namespace RestaurantAPI.Models
 {
     public class Dish
     {
+
         [Key]
         public int Id { get; set; }
 
@@ -11,6 +12,8 @@ namespace RestaurantAPI.Models
         public string Name { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = "Основне";
+
 
         [Range(0.01, 100000, ErrorMessage = "Ціна не може бути нульовою або від'ємною!")]
         public decimal Price { get; set; }

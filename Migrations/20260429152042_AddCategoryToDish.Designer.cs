@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RestaurantAPI.Data;
 
@@ -10,9 +11,11 @@ using RestaurantAPI.Data;
 namespace RestaurantAPI.Migrations
 {
     [DbContext(typeof(RestaurantDbContext))]
-    partial class RestaurantDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429152042_AddCategoryToDish")]
+    partial class AddCategoryToDish
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -25,10 +28,6 @@ namespace RestaurantAPI.Migrations
 
                     b.Property<int>("Calories")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -57,7 +56,6 @@ namespace RestaurantAPI.Migrations
                         {
                             Id = 1,
                             Calories = 650,
-                            Category = "Основне",
                             Description = "Мармурова яловичина з розмарином",
                             ImageUrl = "/images/steak.jpg",
                             IsAvailable = true,
@@ -68,7 +66,6 @@ namespace RestaurantAPI.Migrations
                         {
                             Id = 2,
                             Calories = 320,
-                            Category = "Основне",
                             Description = "Класичний салат з куркою",
                             ImageUrl = "/images/caesar.jpg",
                             IsAvailable = true,
@@ -79,7 +76,6 @@ namespace RestaurantAPI.Migrations
                         {
                             Id = 3,
                             Calories = 450,
-                            Category = "Основне",
                             Description = "Ніжний італійський десерт",
                             ImageUrl = "/images/tiramisu.jpg",
                             IsAvailable = true,
