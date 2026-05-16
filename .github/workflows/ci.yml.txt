@@ -1,0 +1,28 @@
+name: RestoHub CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Завантаження коду (Checkout)
+      uses: actions/checkout@v4
+
+    - name: Встановлення .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        cache: true
+        cache-dependency-path: '**/*.csproj'
+
+    - name: Відновлення залежностей (Restore)
+      run: dotnet restore
+
+    - name: Компiляцiя проєкту (Build)
+      run: dotnet build --no-restore --configuration Release

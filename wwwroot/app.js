@@ -6,8 +6,23 @@ document.addEventListener('DOMContentLoaded', () => {
 let allDishes = [];
 let cart = [];
 
-async function loadMenu()
-{
+function goToCheckout() {
+    if (cart.length === 0) {
+        alert('Ваш кошик порожній! Додайте хоча б одну страву для бронювання.');
+        return;
+    }
+    document.getElementById('view-menu').classList.add('hidden');
+    document.getElementById('view-checkout').classList.remove('hidden');
+    window.scrollTo(0, 0); 
+}
+
+function goToMenu() {
+    document.getElementById('view-checkout').classList.add('hidden');
+    document.getElementById('view-menu').classList.remove('hidden');
+    window.scrollTo(0, 0);
+}
+
+async function loadMenu() {
     const grid = document.getElementById('menu-grid');
     
     try {
@@ -16,11 +31,9 @@ async function loadMenu()
 
         const menuItems = await response.json();
         allDishes = menuItems;
-        
         grid.innerHTML = ''; 
 
         const categories = menuItems.reduce((acc, item) => {
-            if (!item.isAvailable) return acc;
             if (!acc[item.category]) acc[item.category] = [];
             acc[item.category].push(item);
             return acc;
@@ -37,25 +50,30 @@ async function loadMenu()
 
             categories[categoryName].forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'menu-card';
+                card.className = `menu-card ${item.isAvailable ? '' : 'out-of-stock'}`;
                 const bgImage = item.imageUrl ? `url('${item.imageUrl}')` : 'none';
                 
-               card.innerHTML = `
-                    <div class="card-image" style="background-image: ${bgImage}" onclick="showDishDetails(${item.id})"></div> 
-                    <div class="card-content"> <h3>${item.name}</h3>
+                const clickAction = item.isAvailable ? `onclick="showDishDetails(${item.id})"` : '';
+                
+                const safeName = item.name.replace(/'/g, "\\'");
+                const buttonHtml = item.isAvailable 
+                    ? `<button class="btn-primary btn-sm" onclick="addToCart(${item.id}, '${safeName}', ${item.price})">Додати</button>`
+                    : `<button class="btn-disabled btn-sm" disabled>Немає в наявності</button>`;
+                
+                card.innerHTML = `
+                    <div class="card-image" style="background-image: ${bgImage}" ${clickAction}></div> 
+                    <div class="card-content"> 
+                        <h3>${item.name}</h3>
                         <p class="price">${item.price.toFixed(2)} грн</p>
-                        <button class="btn-primary btn-sm" onclick="addToCart(${item.id}, '${item.name}', ${item.price})">
-                            Додати
-                        </button>
+                        ${buttonHtml}
                     </div>
                 `;
                 categoryGrid.appendChild(card);
             });
             grid.appendChild(categoryGrid);
         }
-        
     } catch (error) {
-        grid.innerHTML = '<p style="color: red;">Помилка завантаження.</p>';
+        grid.innerHTML = '<p style="color: red;">Помилка завантаження меню.</p>';
     }
 }
 
@@ -67,11 +85,17 @@ function addToCart(id, name, price) {
 function removeFromCart(index) {
     cart.splice(index, 1);
     renderCart();
+    
+    if (cart.length === 0 && !document.getElementById('view-checkout').classList.contains('hidden')) {
+        alert('Кошик спорожнів. Повертаємось до меню!');
+        goToMenu();
+    }
 }
 
 function renderCart() {
     const cartItemsList = document.getElementById('cart-items');
     const totalPriceSpan = document.getElementById('total-price');
+    const headerCartCount = document.getElementById('header-cart-count'); 
     
     cartItemsList.innerHTML = '';
     let total = 0;
@@ -93,13 +117,15 @@ function renderCart() {
         });
     }
 
-    totalPriceSpan.textContent = total.toFixed(2);
+    if (totalPriceSpan) totalPriceSpan.textContent = total.toFixed(2);
+    if (headerCartCount) headerCartCount.textContent = cart.length; 
 }
 
 function setupReservationForm() {
     const dateInput = document.getElementById('bookingDate');
     const form = document.getElementById('reservation-form');
-    const msgDiv = document.getElementById('reservation-message');
+
+    if (!form || !dateInput) return;
 
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -112,7 +138,8 @@ function setupReservationForm() {
             clientName: document.getElementById('clientName').value,
             phone: document.getElementById('phone').value,
             bookingDate: document.getElementById('bookingDate').value,
-            guestsCount: parseInt(document.getElementById('guestsCount').value)
+            guestsCount: parseInt(document.getElementById('guestsCount').value),
+            dishIds: cart.map(item => item.id) 
         };
 
         try {
@@ -124,21 +151,27 @@ function setupReservationForm() {
 
             if (response.ok) {
                 form.reset();
-                msgDiv.textContent = '✅ Столик успішно заброньовано!';
-                msgDiv.className = 'success-msg';
-                msgDiv.style.display = 'block';
-                setTimeout(() => msgDiv.style.display = 'none', 5000);
+                cart = []; 
+                renderCart();
+                alert('✅ Столик успішно заброньовано! Чекаємо на вас.');
+                goToMenu();
             } else {
                 const errorData = await response.json();
-                console.warn('Сервер відхилив запит:', errorData);
-                alert('Помилка! Перевірте дані (кількість гостей 1-20, дата не в минулому).');
+                let errorMessage = "Увага:\n";
+                if (errorData.errors) {
+                    for (const key in errorData.errors) {
+                        errorMessage += `- ${errorData.errors[key].join(', ')}\n`;
+                    }
+                } else if (errorData.title) {
+                    errorMessage += errorData.title;
+                }
+                alert(errorMessage);
             }
         } catch (error) {
             alert('Помилка з\'єднання. Сервер не відповідає.');
         }
     });
 }
-
 
 function showDishDetails(id) {
     const dish = allDishes.find(d => d.id === id);
@@ -147,9 +180,7 @@ function showDishDetails(id) {
     document.getElementById('modalImg').src = dish.imageUrl || '';
     document.getElementById('modalTitle').textContent = dish.name;
     document.getElementById('modalDesc').textContent = dish.description;
-    
     document.getElementById('modalCalories').textContent = dish.calories > 0 ? `🔥 Калорійність: ${dish.calories} ккал` : '';
-
     document.getElementById('dishModal').style.display = 'block';
 }
 
@@ -162,4 +193,4 @@ window.onclick = function(event) {
     if (event.target === modal) {
         closeModal();
     }
-}
+};

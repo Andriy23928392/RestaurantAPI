@@ -11,12 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const dishes = await response.json();
             renderTable(dishes);
+
+            // Викликаємо завантаження бронювань після меню
+            await loadReservations();
+            
         } catch (error) {
             console.error('Помилка завантаження даних:', error);
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="5" class="error-message">
-                        Не вдалося завантажити меню. Перевір консоль та чи запущено локальний сервер.
+                        Не вдалося завантажити меню. Перевір консоль.
                     </td>
                 </tr>
             `;
@@ -64,25 +68,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggles = document.querySelectorAll('.toggle-availability');
 
         toggles.forEach(toggle => {
-            toggle.addEventListener('change', (event) => {
+            toggle.addEventListener('change', async (event) => { 
                 const checkbox = event.target;
                 const dishId = checkbox.getAttribute('data-id');
                 const isNowAvailable = checkbox.checked;
-
                 const statusLabel = document.getElementById(`status-text-${dishId}`);
 
-                if (isNowAvailable) {
-                    statusLabel.textContent = 'В меню';
-                    statusLabel.className = 'status-label status-active';
-                } else {
-                    statusLabel.textContent = 'В стоп-листі';
-                    statusLabel.className = 'status-label status-inactive';
-                }
+                try {
+                    const response = await fetch(`/api/menu/${dishId}/toggle`, {
+                        method: 'PUT'
+                    });
 
-                console.log(`Імітація PUT запиту: id страви = ${dishId}, новий статус isAvailable = ${isNowAvailable}`);
+                    if (!response.ok) {
+                        throw new Error('Помилка сервера');
+                    }
+
+                    if (isNowAvailable) {
+                        statusLabel.textContent = 'В меню';
+                        statusLabel.className = 'status-label status-active';
+                    } else {
+                        statusLabel.textContent = 'В стоп-листі';
+                        statusLabel.className = 'status-label status-inactive';
+                    }
+                } catch (error) {
+                    alert('Не вдалося змінити статус в базі даних. Сервер не відповідає.');
+                    checkbox.checked = !isNowAvailable; 
+                }
             });
         });
     }
 
-    init();
+    // НОВА ФУНКЦІЯ: Завантаження бронювань
+    async function loadReservations() {
+        const tbody = document.getElementById('reservations-tbody');
+        if (!tbody) return; // Захист, якщо таблиці ще немає в HTML
+        
+        try {
+            const response = await fetch('/api/reservations');
+            if (!response.ok) throw new Error('Помилка сервера');
+            
+            const reservations = await response.json();
+            
+            // Сортуємо: найновіші бронювання будуть зверху
+            reservations.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
+            
+            tbody.innerHTML = '';
+            reservations.forEach(res => {
+                const row = document.createElement('tr');
+                const date = new Date(res.bookingDate).toLocaleString('uk-UA');
+                
+                row.innerHTML = `
+                    <td><strong>${res.clientName}</strong></td>
+                    <td>${res.phone}</td>
+                    <td>${date}</td>
+                    <td><span class="user-badge">${res.guestsCount} осіб</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="4" class="error-message">Не вдалося завантажити бронювання.</td></tr>`;
+        }
+    }
+
+    init(); 
 });

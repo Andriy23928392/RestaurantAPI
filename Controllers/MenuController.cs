@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Data;
+using RestaurantAPI.DTOs;
 using RestaurantAPI.Models;
 
 namespace RestaurantAPI.Controllers
@@ -19,9 +20,23 @@ namespace RestaurantAPI.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Dish>>> GetMenu()
+        public async Task<ActionResult<IEnumerable<MenuResponseDto>>> GetMenu()
         {
-            return await _context.Dishes.ToListAsync();
+            var menu = await _context.Dishes
+                .Select(d => new MenuResponseDto
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Description = d.Description,
+                    Category = d.Category,
+                    Price = d.Price,
+                    Calories = d.Calories,
+                    ImageUrl = d.ImageUrl,
+                    IsAvailable = d.IsAvailable 
+                })
+                .ToListAsync();
+
+            return Ok(menu);
         }
 
 

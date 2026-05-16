@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Data;
+using RestaurantAPI.DTOs;
 using RestaurantAPI.Models;
 
 namespace RestaurantAPI.Controllers
@@ -25,13 +26,25 @@ namespace RestaurantAPI.Controllers
         [HttpPost]
 
         [HttpPost]
-        public async Task<ActionResult<Reservation>> CreateReservation(Reservation reservation)
+        public async Task<ActionResult> CreateReservation([FromBody] CreateReservationDto dto)
         {
-            _context.Reservations.Add(reservation);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); 
+            }
 
+            var reservation = new Reservation
+            {
+                ClientName = dto.ClientName,
+                Phone = dto.Phone,
+                BookingDate = dto.BookingDate,
+                GuestsCount = dto.GuestsCount
+            };
+
+            _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Столик успішно заброньовано!", data = reservation });
+            return Ok(new { message = "Столик успішно заброньовано!" });
         }
     }
 }
