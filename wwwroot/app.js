@@ -24,6 +24,7 @@ function goToMenu() {
 
 async function loadMenu() {
     const grid = document.getElementById('menu-grid');
+    const sidebar = document.getElementById('category-sidebar'); // Знаходимо сайдбар
     
     try {
         const response = await fetch('/api/menu');
@@ -32,6 +33,7 @@ async function loadMenu() {
         const menuItems = await response.json();
         allDishes = menuItems;
         grid.innerHTML = ''; 
+        if(sidebar) sidebar.innerHTML = ''; // Очищаємо сайдбар перед завантаженням
 
         const categories = menuItems.reduce((acc, item) => {
             if (!acc[item.category]) acc[item.category] = [];
@@ -40,8 +42,19 @@ async function loadMenu() {
         }, {});
 
         for (const categoryName in categories) {
+            const categoryId = `cat-${categoryName.replace(/\s+/g, '-')}`;
+
+            if (sidebar) {
+                const link = document.createElement('a');
+                link.href = `#${categoryId}`;
+                link.className = 'sidebar-link';
+                link.textContent = categoryName;
+                sidebar.appendChild(link);
+            }
+
             const sectionTitle = document.createElement('h2');
             sectionTitle.className = 'category-title';
+            sectionTitle.id = categoryId; 
             sectionTitle.textContent = categoryName;
             grid.appendChild(sectionTitle);
 
@@ -76,7 +89,6 @@ async function loadMenu() {
         grid.innerHTML = '<p style="color: red;">Помилка завантаження меню.</p>';
     }
 }
-
 function addToCart(id, name, price) {
     cart.push({ id, name, price });
     renderCart();

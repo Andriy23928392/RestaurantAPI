@@ -1,38 +1,57 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('menu-tbody');
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginBtn = document.getElementById('login-btn');
+    const passInput = document.getElementById('chef-password');
+    const errorMsg = document.getElementById('login-error');
+
+    let jwtToken = sessionStorage.getItem('chefToken');
+
+    if (jwtToken) {
+        loginOverlay.classList.add('hidden');
+        init();
+    }
+
+    loginBtn.addEventListener('click', async () => {
+        const password = passInput.value;
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                jwtToken = data.token;
+                sessionStorage.setItem('chefToken', jwtToken); // Зберігаємо токен
+                loginOverlay.classList.add('hidden');
+                init();
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        } catch (e) {
+            alert('Помилка з\'єднання з сервером');
+        }
+    });
 
     async function init() {
         try {
             const response = await fetch('/api/menu');
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const dishes = await response.json();
             renderTable(dishes);
-
-            // Викликаємо завантаження бронювань після меню
             await loadReservations();
-            
         } catch (error) {
             console.error('Помилка завантаження даних:', error);
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="error-message">
-                        Не вдалося завантажити меню. Перевір консоль.
-                    </td>
-                </tr>
-            `;
+            tableBody.innerHTML = `<tr><td colspan="5" class="error-message">Не вдалося завантажити меню.</td></tr>`;
         }
     }
 
     function renderTable(dishes) {
         tableBody.innerHTML = ''; 
-
         dishes.forEach(dish => {
             const row = document.createElement('tr');
-
             const statusText = dish.isAvailable ? 'В меню' : 'В стоп-листі';
             const statusClass = dish.isAvailable ? 'status-active' : 'status-inactive';
             const isChecked = dish.isAvailable ? 'checked' : '';
@@ -57,16 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
             `;
-
             tableBody.appendChild(row);
         });
-
         attachToggleListeners();
     }
 
     function attachToggleListeners() {
         const toggles = document.querySelectorAll('.toggle-availability');
-
         toggles.forEach(toggle => {
             toggle.addEventListener('change', async (event) => { 
                 const checkbox = event.target;
@@ -76,12 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     const response = await fetch(`/api/menu/${dishId}/toggle`, {
-                        method: 'PUT'
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`
+                        }
                     });
 
-                    if (!response.ok) {
-                        throw new Error('Помилка сервера');
+                    if (response.status === 401) {
+                        throw new Error('Немає доступу (Unauthorized)! Токен прострочений.');
                     }
+                    if (!response.ok) throw new Error('Помилка сервера');
 
                     if (isNowAvailable) {
                         statusLabel.textContent = 'В меню';
@@ -91,32 +111,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         statusLabel.className = 'status-label status-inactive';
                     }
                 } catch (error) {
-                    alert('Не вдалося змінити статус в базі даних. Сервер не відповідає.');
+                    alert(error.message);
                     checkbox.checked = !isNowAvailable; 
+                    if (error.message.includes('401')) {
+                        sessionStorage.removeItem('chefToken');
+                        location.reload();
+                    }
                 }
             });
         });
     }
 
-    // НОВА ФУНКЦІЯ: Завантаження бронювань
     async function loadReservations() {
         const tbody = document.getElementById('reservations-tbody');
-        if (!tbody) return; // Захист, якщо таблиці ще немає в HTML
-        
+        if (!tbody) return; 
         try {
             const response = await fetch('/api/reservations');
             if (!response.ok) throw new Error('Помилка сервера');
-            
             const reservations = await response.json();
-            
-            // Сортуємо: найновіші бронювання будуть зверху
             reservations.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
-            
             tbody.innerHTML = '';
             reservations.forEach(res => {
                 const row = document.createElement('tr');
                 const date = new Date(res.bookingDate).toLocaleString('uk-UA');
-                
                 row.innerHTML = `
                     <td><strong>${res.clientName}</strong></td>
                     <td>${res.phone}</td>
@@ -129,6 +146,4 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML = `<tr><td colspan="4" class="error-message">Не вдалося завантажити бронювання.</td></tr>`;
         }
     }
-
-    init(); 
 });

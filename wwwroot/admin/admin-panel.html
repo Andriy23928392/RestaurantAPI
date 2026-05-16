@@ -4,52 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Шеф-кухар | Адмін-панель</title>
-    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="admin-style.css?v=5">
 </head>
 <body>
-<div class="admin-wrapper">
-    <header class="admin-header">
-        <div>
-            <h1>Панель управління меню</h1>
-            <p class="subtitle">Режим шеф-кухаря</p>
-        </div>
-        <div class="user-badge">Chef</div>
-    </header>
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <div>
+                <h1>Панель управління меню</h1>
+                <p class="subtitle">Режим шеф-кухаря</p>
+            </div>
+            <div class="user-badge">Chef</div>
+        </header>
 
-    <main class="admin-content">
-        <div class="table-container">
-            <table class="menu-table">
-                <thead>
-                    <tr>
-                        <th>Фото</th>
-                        <th>Назва та опис</th>
-                        <th>Ціна (₴)</th>
-                        <th>Калорії</th>
-                        <th>Статус наявності</th>
-                    </tr>
-                </thead>
-                <tbody id="menu-tbody">
-                </tbody>
-            </table>
-        </div>
-        <h2 style="margin-top: 40px; margin-bottom: 20px;">Останні бронювання 📅</h2>
-        <div class="table-container">
-            <table class="menu-table">
-                <thead>
-                    <tr>
-                        <th>Ім'я клієнта</th>
-                        <th>Телефон</th>
-                        <th>Дата та час</th>
-                        <th>К-ть гостей</th>
-                    </tr>
-                </thead>
-                <tbody id="reservations-tbody">
-                </tbody>
-            </table>
-        </div>
-    </main>
-</div>
+        <main class="admin-content">
+            <div class="table-container">
+                <table class="menu-table">
+                    <thead>
+                        <tr>
+                            <th>Фото</th>
+                            <th>Назва та опис</th>
+                            <th>Ціна (₴)</th>
+                            <th>Калорії</th>
+                            <th>Статус наявності</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-tbody">
+                    </tbody>
+                </table>
+            </div>
+            <h2 style="margin-top: 40px; margin-bottom: 20px;">Останні бронювання 📅</h2>
+            <div class="table-container">
+                <table class="menu-table">
+                    <thead>
+                        <tr>
+                            <th>Ім'я клієнта</th>
+                            <th>Телефон</th>
+                            <th>Дата та час</th>
+                            <th>К-ть гостей</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
-<script src="admin-app.js?v=1"></script>
+    <script src="admin-app.js?v=5"></script>
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+            <h2 style="color: #ffffff; margin-bottom: 20px;">Вхід для Шефа 👨‍🍳</h2>
+            <input type="password" id="chef-password" placeholder="Секретний пароль..." style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #555; background: #333; color: white; font-size: 1rem;">
+            <button id="login-btn" style="width: 100%; padding: 12px; background-color: #bb86fc; color: black; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; border-radius: 6px;">Увійти</button>
+            <p id="login-error" style="color: #cf6679; margin-top: 15px; display: none; font-weight: bold;">Невірний пароль!</p>
+        </div>
+    </div>
 </body>
 </html>

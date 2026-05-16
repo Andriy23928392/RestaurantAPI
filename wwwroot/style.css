@@ -139,7 +139,6 @@ h2 {
     margin-bottom: 15px;
 }
 
-/* СТРАВИ, ЯКИХ НЕМАЄ В НАЯВНОСТІ */
 .out-of-stock {
     opacity: 0.6;
     filter: grayscale(80%);
@@ -152,6 +151,71 @@ h2 {
         .out-of-stock .card-image:hover {
             opacity: 1;
         }
+
+/* ================= SIDEBAR LAYOUT  ================= */
+.menu-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr; 
+    gap: 30px;
+    align-items: start;
+}
+
+.sidebar {
+    position: sticky;
+    top: 90px;
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    max-height: calc(100vh - 120px);
+    overflow-y: auto; 
+}
+
+.sidebar-link {
+    display: block;
+    padding: 12px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent; 
+}
+
+    .sidebar-link:hover {
+        background-color: var(--bg-color);
+        color: var(--primary-color);
+        border-left-color: var(--primary-color);
+        padding-left: 25px; 
+    }
+
+@media (max-width: 768px) {
+    .menu-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: relative;
+        top: 0;
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-link {
+        display: inline-block;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 10px 15px;
+    }
+
+        .sidebar-link:hover {
+            padding-left: 15px;
+            border-left-color: transparent;
+            border-bottom-color: var(--primary-color);
+        }
+}
 
 /* ================= CHECKOUT & CART ================= */
 .checkout-container {
@@ -293,7 +357,7 @@ input {
 /* ================= MODAL ================= */
 .modal {
     display: none;
-    position: fixed; /* Відриває вікно і фіксує його на екрані */
+    position: fixed; 
     z-index: 1000;
     left: 0;
     top: 0;
@@ -301,12 +365,12 @@ input {
     height: 100%;
     background-color: rgba(0,0,0,0.6);
     backdrop-filter: blur(5px);
-    overflow: auto; /* Дозволяє скролити, якщо вікно завелике */
+    overflow: auto; 
 }
 
 .modal-content {
     background-color: var(--card-bg);
-    margin: 5% auto; /* 5% від верху екрана, по центру по горизонталі */
+    margin: 5% auto; 
     padding: 20px;
     border-radius: 12px;
     width: 90%;
@@ -347,4 +411,28 @@ input {
     font-size: 0.9em;
     font-weight: bold;
     color: #555;
+}
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-box {
+    background-color: var(--text-primary);
+    padding: 30px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
 }

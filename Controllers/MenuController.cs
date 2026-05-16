@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Data;
 using RestaurantAPI.DTOs;
@@ -39,21 +40,17 @@ namespace RestaurantAPI.Controllers
             return Ok(menu);
         }
 
-
         [HttpPut("{id}/toggle")]
+        [Authorize] 
         public async Task<IActionResult> ToggleDishStatus(int id)
         {
-
             var dish = await _context.Dishes.FindAsync(id);
             if (dish == null)
             {
                 return NotFound("Страву не знайдено");
             }
 
-
             dish.IsAvailable = !dish.IsAvailable;
-
-   
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Статус страви успішно змінено", currentStatus = dish.IsAvailable });
