@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.Data;
-using RestaurantAPI.DTOs;
 using RestaurantAPI.Models;
 
 namespace RestaurantAPI.Controllers
@@ -13,81 +11,66 @@ namespace RestaurantAPI.Controllers
     {
         private readonly RestaurantDbContext _context;
 
-
         public MenuController(RestaurantDbContext context)
         {
             _context = context;
         }
 
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MenuResponseDto>>> GetMenu()
+        public async Task<ActionResult<IEnumerable<Dish>>> GetMenu()
         {
-            var menu = await _context.Dishes
-                .Select(d => new MenuResponseDto
-                {
-                    Id = d.Id,
-                    Name = d.Name,
-                    Description = d.Description,
-                    Category = d.Category,
-                    Price = d.Price,
-                    Calories = d.Calories,
-                    ImageUrl = d.ImageUrl,
-                    IsAvailable = d.IsAvailable 
-                })
-                .ToListAsync();
-
-            return Ok(menu);
+            return await _context.Dishes.ToListAsync();
         }
 
         [HttpPut("{id}/toggle")]
-        [Authorize] 
-        public async Task<IActionResult> ToggleDishStatus(int id)
+        public async Task<IActionResult> ToggleAvailability(int id)
         {
             var dish = await _context.Dishes.FindAsync(id);
-            if (dish == null)
-            {
-                return NotFound("Страву не знайдено");
-            }
+            if (dish == null) return NotFound();
 
             dish.IsAvailable = !dish.IsAvailable;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Статус страви успішно змінено", currentStatus = dish.IsAvailable });
+            return Ok(dish);
         }
-        [HttpPost]
-        public async Task<ActionResult<Dish>> CreateDish(Dish dish)
+
+        [HttpPost("add")]
+        public async Task<IActionResult> CreateDish([FromForm] string name, [FromForm] string description, [FromForm] string category, [FromForm] decimal price, [FromForm] int calories, IFormFile? imageFile)
         {
+            string imageUrl = "/images/default.jpg";
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+
+                if (!Directory.Exists(imagesFolder)) Directory.CreateDirectory(imagesFolder);
+
+                var filePath = Path.Combine(imagesFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                imageUrl = "/images/" + fileName;
+            }
+
+            var dish = new Dish
+            {
+                Name = name,
+                Description = description,
+                Category = category,
+                Price = price,
+                Calories = calories,
+                ImageUrl = imageUrl,
+                IsAvailable = true
+            };
+
             _context.Dishes.Add(dish);
             await _context.SaveChangesAsync();
 
-            return Ok(dish);
-        }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDish(int id, Dish updatedDish)
-        {
-            if (id != updatedDish.Id)
-            {
-                return BadRequest("ID у шляху не співпадає з ID у тілі запиту!");
-            }
-
-            var existingDish = await _context.Dishes.FindAsync(id);
-            if (existingDish == null)
-            {
-                return NotFound("Страву не знайдено");
-            }
-
-            existingDish.Name = updatedDish.Name;
-            existingDish.Description = updatedDish.Description;
-            existingDish.Price = updatedDish.Price;
-            existingDish.Calories = updatedDish.Calories;
-            existingDish.Category = updatedDish.Category;
-            existingDish.ImageUrl = updatedDish.ImageUrl;
-            existingDish.IsAvailable = updatedDish.IsAvailable;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(existingDish);
+            return Ok(new { message = "Страву успішно додано!", data = dish });
         }
     }
 }
