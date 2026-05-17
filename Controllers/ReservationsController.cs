@@ -107,6 +107,6 @@ namespace RestaurantAPI.Controllers
         public string Phone { get; set; } = string.Empty;
         public DateTime BookingDate { get; set; }
         public int GuestsCount { get; set; }
-        public List<int> DishIds { get; set; } = new(); // Сюди потраплять ID страв з кошика
+        public List<int> DishIds { get; set; } = new(); 
     }
 }
